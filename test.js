@@ -194,7 +194,7 @@ describe("search service", function(){
 			//if (count !== 1) return done("wrong results");
 			return done();
 		});
-	});	
+	});
 
 
 	it("suggestions", function(done){
@@ -214,6 +214,18 @@ describe("search service", function(){
 			if (!Array.isArray(results)) return done("results is not an array");
 			if (results.length !== 1) return done("results is not the right length");
 			if (results[0].id !== 'document1') return done("doc 1 is not returned")
+			return done();
+		});
+	});
+
+	it("searches with full results", function(done){
+		client.search("myindex", {search:"unique", $count:true, fullResults: true}, function(err, results){
+			if (err) return done("error returned");
+			if (!results) return done("results is null");
+			if (!results["@odata.count"]) return done("results[\"@odata.count\"] doesn't exists");
+			if (!Array.isArray(results.value)) return done("results.value is not an array");
+			if (results.value.length !== 1) return done("results.value is not the right length");
+			if (results.value[0].id !== 'document1') return done("doc 1 is not returned");
 			return done();
 		});
 	});
