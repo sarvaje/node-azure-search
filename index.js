@@ -41,7 +41,7 @@ module.exports = function(options){
 		    	headers[x] = overrides[x];
 		    }
 	    }
-	    
+
 
 		var req = http.request({
 			host: url.parse(options.url).hostname,
@@ -74,7 +74,7 @@ module.exports = function(options){
 					if (overrides && overrides.Accept == "text/plain"){
 						// do nothing
 					} else {
-						result = JSON.parse(result);	
+						result = JSON.parse(result);
 					}
 				} catch (err) {
 					return cb("failed to parse JSON:\n" + err + "\n " + result, null, res);
@@ -90,7 +90,7 @@ module.exports = function(options){
 					cb(null, result, res);
 				}
 				return;
-             
+
             });
 
 			res.on('error', function(err){
@@ -105,7 +105,7 @@ module.exports = function(options){
 			if (payload) {
 				req.write(payload);
 			}
-			req.end();	
+			req.end();
 			req.on('error', function(err){
 				if (cb){
 					cb(err, null, req);
@@ -144,7 +144,7 @@ module.exports = function(options){
 			get(['indexes', indexName], null, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data);				
+				cb(null, data);
 			});
 		},
 		getIndexStats : function(indexName, cb){
@@ -152,7 +152,7 @@ module.exports = function(options){
 			get(['indexes', indexName, 'stats'], null, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data);				
+				cb(null, data);
 			});
 		},
 		deleteIndex : function(indexName, cb){
@@ -160,7 +160,7 @@ module.exports = function(options){
 			del(['indexes', indexName],function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data);						
+				cb(null, data);
 			});
 		},
 
@@ -170,59 +170,63 @@ module.exports = function(options){
 			post(['indexes', indexName, "docs", "index"], {value:documents}, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data.value);						
+				cb(null, data.value);
 			});
 		},
 		updateDocuments : function(indexName,documents,cb){
 			if (!indexName) throw new Error("indexName is not defined");
 			if (!documents) throw new Error("documents is not defined");
-			
+
 			for(var i=0; i<documents.length;i++){
 				documents[i]["@search.action"] = "merge";
 			}
-			
+
 			post(['indexes', indexName, "docs", "index"], {value:documents}, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data.value);						
+				cb(null, data.value);
 			});
 		},
 		uploadDocuments : function(indexName,documents,cb){
 			if (!indexName) throw new Error("indexName is not defined");
 			if (!documents) throw new Error("documents is not defined");
-			
+
 			for(var i=0; i<documents.length;i++){
 				documents[i]["@search.action"] = "upload";
 			}
-			
+
 			post(['indexes', indexName, "docs", "index"], {value:documents}, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data.value);						
+				cb(null, data.value);
 			});
 		},
 		deleteDocuments : function(indexName,keys,cb){
 			if (!indexName) throw new Error("indexName is not defined");
 			if (!keys) throw new Error("keys is not defined");
-			
+
 			for(var i=0; i<keys.length;i++){
 				keys[i]["@search.action"] = "delete";
 			}
-			
+
 			post(['indexes', indexName, "docs", "index"], {value:keys}, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data.value);						
+				cb(null, data.value);
 			});
 		},
 		search : function(indexName, query, cb){
 			if (!indexName) throw new Error("indexName is not defined");
-			if (!query) throw new Error("query is not defined");		
+			if (!query) throw new Error("query is not defined");
 
 			get(['indexes', indexName, 'docs', query], null, function(err, results){
 				if (err) return cb(err);
 				if (results && results.error) return cb(results.error);
-				cb(null, results.value);						
+				if (query.fullResults) {
+					cb(null, results);
+				} else {
+					cb(null, results.value);
+				}
 			});
 		},
 
@@ -233,7 +237,7 @@ module.exports = function(options){
 			get(['indexes', indexName, "docs('" + key + "')"], null, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb(null, data);				
+				cb(null, data);
 			});
 		},
 
@@ -242,18 +246,18 @@ module.exports = function(options){
 
 			get(['indexes', indexName, 'docs', '$count'], {"Accept" : "text/plain"}, function(err, data){
 				if (err) return cb(err);
-				cb(null, parseInt(data.trim()));				
+				cb(null, parseInt(data.trim()));
 			});
 		},
 
 		suggest : function(indexName, query, cb){
 			if (!indexName) throw new Error("indexName is not defined");
-			if (!query) throw new Error("query is not defined");		
+			if (!query) throw new Error("query is not defined");
 
 			get(['indexes', indexName, 'docs', 'suggest', query], null, function(err, results){
 				if (err) return cb(err);
 				if (results && results.error) return cb(results.error);
-				cb(null, results.value);						
+				cb(null, results.value);
 			});
 		},
 		updateIndex: function(indexName, schema, cb){
@@ -262,8 +266,8 @@ module.exports = function(options){
 			put(['indexes', indexName], schema, function(err, data){
 				if (err) return cb(err);
 				if (data && data.error) return cb(data.error);
-				cb();						
-			});			
+				cb();
+			});
 		}
 
 
